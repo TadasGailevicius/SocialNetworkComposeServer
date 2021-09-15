@@ -1,6 +1,6 @@
 package com.tedm.routes
 
-import com.tedm.data.controller.user.UserRepository
+import com.tedm.data.repository.user.UserRepository
 import com.tedm.data.models.User
 import com.tedm.data.requests.CreateAccountRequest
 import com.tedm.data.responses.BasicApiResponse
@@ -11,17 +11,15 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import org.koin.ktor.ext.inject
 
-fun Route.createUserRoute() {
-    val userController: UserRepository by inject()
+fun Route.createUserRoute(userRepository: UserRepository) {
     route("/api/user/create") {
         post {
             val request = call.receiveOrNull<CreateAccountRequest>() ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            val userExists = userController.getUserByEmail(request.email) != null
+            val userExists = userRepository.getUserByEmail(request.email) != null
             if (userExists) {
                 call.respond(
                     BasicApiResponse(
@@ -40,7 +38,7 @@ fun Route.createUserRoute() {
                 )
                 return@post
             }
-            userController.createUser(
+            userRepository.createUser(
                 User(
                     email = request.email,
                     username = request.username,

@@ -1,4 +1,4 @@
-package com.tedm.data.controller.user
+package com.tedm.data.repository.user
 
 import com.tedm.data.models.User
 

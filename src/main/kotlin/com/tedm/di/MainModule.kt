@@ -1,7 +1,7 @@
 package com.tedm.di
 
-import com.tedm.data.controller.user.UserRepository
-import com.tedm.data.controller.user.UserRepositoryImpl
+import com.tedm.data.repository.user.UserRepository
+import com.tedm.data.repository.user.UserRepositoryImpl
 import com.tedm.util.Constants.DATABASE_NAME
 import org.koin.dsl.module
 import org.litote.kmongo.coroutine.coroutine
