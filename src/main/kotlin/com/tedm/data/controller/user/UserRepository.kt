@@ -2,7 +2,7 @@ package com.tedm.data.controller.user
 
 import com.tedm.data.models.User
 
-interface UserController {
+interface UserRepository {
 
     suspend fun createUser(user: User)
 

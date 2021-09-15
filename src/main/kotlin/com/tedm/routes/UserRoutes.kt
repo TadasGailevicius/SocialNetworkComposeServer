@@ -1,6 +1,6 @@
 package com.tedm.routes
 
-import com.tedm.data.controller.user.UserController
+import com.tedm.data.controller.user.UserRepository
 import com.tedm.data.models.User
 import com.tedm.data.requests.CreateAccountRequest
 import com.tedm.data.responses.BasicApiResponse
@@ -14,7 +14,7 @@ import io.ktor.routing.*
 import org.koin.ktor.ext.inject
 
 fun Route.userRoutes() {
-    val userController: UserController by inject()
+    val userController: UserRepository by inject()
     route("/api/user/create") {
         post {
             val request = call.receiveOrNull<CreateAccountRequest>() ?: kotlin.run {

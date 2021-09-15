@@ -1,7 +1,7 @@
 package com.tedm.di
 
-import com.tedm.data.controller.user.UserController
-import com.tedm.data.controller.user.UserControllerImpl
+import com.tedm.data.controller.user.UserRepository
+import com.tedm.data.controller.user.UserRepositoryImpl
 import com.tedm.util.Constants.DATABASE_NAME
 import org.koin.dsl.module
 import org.litote.kmongo.coroutine.coroutine
@@ -12,7 +12,7 @@ val mainModule = module {
         val client = KMongo.createClient().coroutine
         client.getDatabase(DATABASE_NAME)
     }
-    single <UserController>{
-        UserControllerImpl(get())
+    single <UserRepository>{
+        UserRepositoryImpl(get())
     }
 }
