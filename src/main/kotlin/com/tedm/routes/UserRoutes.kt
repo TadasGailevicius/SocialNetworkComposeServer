@@ -13,7 +13,7 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import org.koin.ktor.ext.inject
 
-fun Route.userRoutes() {
+fun Route.createUserRoute() {
     val userController: UserRepository by inject()
     route("/api/user/create") {
         post {
