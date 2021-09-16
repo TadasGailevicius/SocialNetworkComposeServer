@@ -15,6 +15,12 @@ application {
     mainClass.set("io.ktor.server.netty.EngineMain")
 }
 
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
 repositories {
     mavenCentral()
 }
