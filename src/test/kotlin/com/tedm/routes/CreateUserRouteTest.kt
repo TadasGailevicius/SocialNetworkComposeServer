@@ -35,6 +35,11 @@ internal class CreateUserRouteTest : KoinTest {
         }
     }
 
+    @AfterTest
+    fun tearDown(){
+        stopKoin()
+    }
+
     @Test
     fun `Create user, no body attached, responds with BadRequest`() {
         withTestApplication(
