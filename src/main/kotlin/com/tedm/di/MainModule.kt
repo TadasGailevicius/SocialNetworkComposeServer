@@ -1,5 +1,7 @@
 package com.tedm.di
 
+import com.tedm.data.repository.follow.FollowRepository
+import com.tedm.data.repository.follow.FollowRepositoryImpl
 import com.tedm.data.repository.user.UserRepository
 import com.tedm.data.repository.user.UserRepositoryImpl
 import com.tedm.util.Constants.DATABASE_NAME
@@ -14,5 +16,9 @@ val mainModule = module {
     }
     single <UserRepository>{
         UserRepositoryImpl(get())
+    }
+
+    single <FollowRepository>{
+        FollowRepositoryImpl(get())
     }
 }
