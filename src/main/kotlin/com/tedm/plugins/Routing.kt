@@ -1,11 +1,9 @@
 package com.tedm.plugins
 
 import com.tedm.data.repository.follow.FollowRepository
+import com.tedm.data.repository.post.PostRepository
 import com.tedm.data.repository.user.UserRepository
-import com.tedm.routes.createUserRoute
-import com.tedm.routes.followUser
-import com.tedm.routes.loginUser
-import com.tedm.routes.unfollowUser
+import com.tedm.routes.*
 import io.ktor.routing.*
 import io.ktor.application.*
 import org.koin.ktor.ext.inject
@@ -13,6 +11,7 @@ import org.koin.ktor.ext.inject
 fun Application.configureRouting() {
     val userRepository: UserRepository by inject()
     val followRepository: FollowRepository by inject()
+    val postRepository: PostRepository by inject()
     routing {
         // User routes
         createUserRoute(userRepository)
@@ -20,6 +19,8 @@ fun Application.configureRouting() {
         // Following Routes
         followUser(followRepository)
         unfollowUser(followRepository)
+        // Post routes
+        createPostRoute(postRepository)
 
     }
 }
