@@ -5,6 +5,7 @@ import com.tedm.data.models.User
 import com.tedm.data.requests.CreateAccountRequest
 import com.tedm.data.requests.LoginRequest
 import com.tedm.data.responses.BasicApiResponse
+import com.tedm.service.UserService
 import com.tedm.util.ApiResponseMessages.FIELDS_BLANK
 import com.tedm.util.ApiResponseMessages.INVALID_CREDENTIALS
 import com.tedm.util.ApiResponseMessages.USER_ALREADY_EXISTS
@@ -14,14 +15,13 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 
-fun Route.createUserRoute(userRepository: UserRepository) {
+fun Route.createUserRoute(userService: UserService) {
     post("/api/user/create") {
         val request = call.receiveOrNull<CreateAccountRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest)
             return@post
         }
-        val userExists = userRepository.getUserByEmail(request.email) != null
-        if (userExists) {
+        if (userService.doesUserWithEmailExist(request.email)) {
             call.respond(
                 BasicApiResponse(
                     successful = false,
@@ -30,34 +30,26 @@ fun Route.createUserRoute(userRepository: UserRepository) {
             )
             return@post
         }
-        if (request.email.isBlank() || request.password.isBlank() || request.username.isBlank()) {
-            call.respond(
-                BasicApiResponse(
-                    successful = false,
-                    message = FIELDS_BLANK
-                )
-            )
-            return@post
-        }
-        userRepository.createUser(
-            User(
-                email = request.email,
-                username = request.username,
-                password = request.password,
-                profileImageUrl = "",
-                bio = "",
-                gitHubUrl = null,
-                instagramUrl = null,
-                linkedInUrl = null
-            )
-        )
-        call.respond(
-            BasicApiResponse(
-                successful = true
-            )
-        )
-    }
 
+        when (userService.validateCreateAccountRequest(request)) {
+            is UserService.ValidationEvent.ErrorFieldEmpty -> {
+                call.respond(
+                    BasicApiResponse(
+                        successful = false,
+                        message = FIELDS_BLANK
+                    )
+                )
+            }
+            is UserService.ValidationEvent.Success -> {
+                userService.createUser(request)
+                call.respond(
+                    BasicApiResponse(
+                        successful = true
+                    )
+                )
+            }
+        }
+    }
 }
 
 fun Route.loginUser(userRepository: UserRepository) {
