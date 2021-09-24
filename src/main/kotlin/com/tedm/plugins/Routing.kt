@@ -1,26 +1,43 @@
 package com.tedm.plugins
 
-import com.tedm.data.repository.follow.FollowRepository
-import com.tedm.data.repository.post.PostRepository
-import com.tedm.data.repository.user.UserRepository
 import com.tedm.routes.*
+import com.tedm.service.FollowService
+import com.tedm.service.PostService
+import com.tedm.service.UserService
 import io.ktor.routing.*
 import io.ktor.application.*
 import org.koin.ktor.ext.inject
 
 fun Application.configureRouting() {
-    val userRepository: UserRepository by inject()
-    val followRepository: FollowRepository by inject()
-    val postRepository: PostRepository by inject()
+    val userService: UserService by inject()
+
+    val followService: FollowService by inject()
+
+    val postService: PostService by inject()
+
+    val jwtIssuer = environment.config.property("jwt.domain").getString()
+    val jwtAudience = environment.config.property("jwt.audience").getString()
+    val jwtSecret = environment.config.property("jwt.secret").getString()
+
     routing {
         // User routes
-        createUserRoute(userRepository)
-        loginUser(userRepository)
+        createUserRoute(userService)
+        loginUser(
+            userService = userService,
+            jwtIssuer = jwtIssuer,
+            jwtAudience = jwtAudience,
+            jwtSecret = jwtSecret,
+        )
+
         // Following Routes
-        followUser(followRepository)
-        unfollowUser(followRepository)
+        followUser(followService)
+        unfollowUser(followService)
+
         // Post routes
-        createPostRoute(postRepository)
+        createPostRoute(
+            postService = postService,
+            userService = userService
+        )
 
     }
 }

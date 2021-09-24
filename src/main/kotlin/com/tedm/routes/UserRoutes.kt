@@ -1,10 +1,14 @@
 package com.tedm.routes
 
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
 import com.tedm.data.repository.user.UserRepository
 import com.tedm.data.models.User
 import com.tedm.data.requests.CreateAccountRequest
 import com.tedm.data.requests.LoginRequest
+import com.tedm.data.responses.AuthResponse
 import com.tedm.data.responses.BasicApiResponse
+import com.tedm.service.UserService
 import com.tedm.util.ApiResponseMessages.FIELDS_BLANK
 import com.tedm.util.ApiResponseMessages.INVALID_CREDENTIALS
 import com.tedm.util.ApiResponseMessages.USER_ALREADY_EXISTS
@@ -13,15 +17,15 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import java.util.*
 
-fun Route.createUserRoute(userRepository: UserRepository) {
+fun Route.createUserRoute(userService: UserService) {
     post("/api/user/create") {
         val request = call.receiveOrNull<CreateAccountRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest)
             return@post
         }
-        val userExists = userRepository.getUserByEmail(request.email) != null
-        if (userExists) {
+        if (userService.doesUserWithEmailExist(request.email)) {
             call.respond(
                 BasicApiResponse(
                     successful = false,
@@ -30,37 +34,34 @@ fun Route.createUserRoute(userRepository: UserRepository) {
             )
             return@post
         }
-        if (request.email.isBlank() || request.password.isBlank() || request.username.isBlank()) {
-            call.respond(
-                BasicApiResponse(
-                    successful = false,
-                    message = FIELDS_BLANK
-                )
-            )
-            return@post
-        }
-        userRepository.createUser(
-            User(
-                email = request.email,
-                username = request.username,
-                password = request.password,
-                profileImageUrl = "",
-                bio = "",
-                gitHubUrl = null,
-                instagramUrl = null,
-                linkedInUrl = null
-            )
-        )
-        call.respond(
-            BasicApiResponse(
-                successful = true
-            )
-        )
-    }
 
+        when (userService.validateCreateAccountRequest(request)) {
+            is UserService.ValidationEvent.ErrorFieldEmpty -> {
+                call.respond(
+                    BasicApiResponse(
+                        successful = false,
+                        message = FIELDS_BLANK
+                    )
+                )
+            }
+            is UserService.ValidationEvent.Success -> {
+                userService.createUser(request)
+                call.respond(
+                    BasicApiResponse(
+                        successful = true
+                    )
+                )
+            }
+        }
+    }
 }
 
-fun Route.loginUser(userRepository: UserRepository) {
+fun Route.loginUser(
+    userService: UserService,
+    jwtIssuer: String,
+    jwtAudience: String,
+    jwtSecret: String
+) {
     post("/api/user/login") {
         val request = call.receiveOrNull<LoginRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest)
@@ -72,15 +73,19 @@ fun Route.loginUser(userRepository: UserRepository) {
             return@post
         }
 
-        val isCorrectPassword = userRepository.doesPasswordForUserMatch(
-            email = request.email,
-            enteredPassword = request.password
-        )
+        val isCorrectPassword = userService.doesPasswordMatchForUser(request)
         if (isCorrectPassword) {
+            val expiresIn = 1000L * 60L * 60L * 24L * 365L
+            val token = JWT.create()
+                .withClaim("email", request.email)
+                .withIssuer(jwtIssuer)
+                .withExpiresAt(Date(System.currentTimeMillis() + expiresIn))
+                .withAudience(jwtAudience)
+                .sign(Algorithm.HMAC256(jwtSecret))
             call.respond(
                 status = HttpStatusCode.OK,
-                message = BasicApiResponse(
-                    successful = true
+                message = AuthResponse(
+                    token = token
                 )
             )
         } else {
