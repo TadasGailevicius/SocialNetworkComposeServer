@@ -1,9 +1,12 @@
 package com.tedm.routes
 
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
 import com.tedm.data.repository.user.UserRepository
 import com.tedm.data.models.User
 import com.tedm.data.requests.CreateAccountRequest
 import com.tedm.data.requests.LoginRequest
+import com.tedm.data.responses.AuthResponse
 import com.tedm.data.responses.BasicApiResponse
 import com.tedm.service.UserService
 import com.tedm.util.ApiResponseMessages.FIELDS_BLANK
@@ -14,6 +17,7 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import java.util.*
 
 fun Route.createUserRoute(userService: UserService) {
     post("/api/user/create") {
@@ -52,7 +56,12 @@ fun Route.createUserRoute(userService: UserService) {
     }
 }
 
-fun Route.loginUser(userRepository: UserRepository) {
+fun Route.loginUser(
+    userService: UserService,
+    jwtIssuer: String,
+    jwtAudience: String,
+    jwtSecret: String
+) {
     post("/api/user/login") {
         val request = call.receiveOrNull<LoginRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest)
@@ -64,15 +73,19 @@ fun Route.loginUser(userRepository: UserRepository) {
             return@post
         }
 
-        val isCorrectPassword = userRepository.doesPasswordForUserMatch(
-            email = request.email,
-            enteredPassword = request.password
-        )
+        val isCorrectPassword = userService.doesPasswordMatchForUser(request)
         if (isCorrectPassword) {
+            val expiresIn = 1000L * 60L * 60L * 24L * 365L
+            val token = JWT.create()
+                .withClaim("email", request.email)
+                .withIssuer(jwtIssuer)
+                .withExpiresAt(Date(System.currentTimeMillis() + expiresIn))
+                .withAudience(jwtAudience)
+                .sign(Algorithm.HMAC256(jwtSecret))
             call.respond(
                 status = HttpStatusCode.OK,
-                message = BasicApiResponse(
-                    successful = true
+                message = AuthResponse(
+                    token = token
                 )
             )
         } else {
