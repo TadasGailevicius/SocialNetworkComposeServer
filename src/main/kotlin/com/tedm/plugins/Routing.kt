@@ -38,6 +38,12 @@ fun Application.configureRouting() {
             postService = postService,
             userService = userService
         )
+        getPostsForFollows(
+            postService = postService
+        )
+        deletePost(
+            postService = postService
+        )
 
     }
 }
