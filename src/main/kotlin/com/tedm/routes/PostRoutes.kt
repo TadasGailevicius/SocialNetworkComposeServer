@@ -3,6 +3,7 @@ package com.tedm.routes
 import com.tedm.data.requests.CreatePostRequest
 import com.tedm.data.requests.DeletePostRequest
 import com.tedm.data.responses.BasicApiResponse
+import com.tedm.service.LikeService
 import com.tedm.service.PostService
 import com.tedm.service.UserService
 import com.tedm.util.ApiResponseMessages.USER_NOT_FOUND
@@ -16,7 +17,7 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 
-fun Route.createPostRoute(
+fun Route.createPost(
     postService: PostService,
     userService: UserService
 ) {
@@ -82,6 +83,8 @@ fun Route.getPostsForFollows(
 
 fun Route.deletePost(
     postService: PostService,
+    likeService: LikeService,
+    //commentService: CommentService
 ) {
     authenticate {
         delete("/api/post/delete") {
@@ -96,6 +99,8 @@ fun Route.deletePost(
             }
             if (post.userId == call.userId) {
                 postService.deletePost(request.postId)
+                likeService.deleteLikesForParent(request.postId)
+                //commentService.deleteCommentsForPost(request.postId)
                 call.respond(HttpStatusCode.OK)
             } else {
                 call.respond(HttpStatusCode.Unauthorized)
