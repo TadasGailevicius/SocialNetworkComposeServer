@@ -1,10 +1,7 @@
 package com.tedm.plugins
 
 import com.tedm.routes.*
-import com.tedm.service.FollowService
-import com.tedm.service.LikeService
-import com.tedm.service.PostService
-import com.tedm.service.UserService
+import com.tedm.service.*
 import io.ktor.routing.*
 import io.ktor.application.*
 import org.koin.ktor.ext.inject
@@ -17,6 +14,8 @@ fun Application.configureRouting() {
     val postService: PostService by inject()
 
     val likeService: LikeService by inject()
+
+    val commentService: CommentService by inject()
 
     val jwtIssuer = environment.config.property("jwt.domain").getString()
     val jwtAudience = environment.config.property("jwt.audience").getString()
@@ -55,6 +54,21 @@ fun Application.configureRouting() {
         )
         unlikeParent(
             likeService = likeService
+        )
+
+        // Comment routes
+
+        createComment(
+            commentService = commentService
+        )
+
+        deleteComment(
+            commentService = commentService,
+            likeService = likeService
+        )
+
+        getCommentsForPost(
+            commentService = commentService
         )
 
 
