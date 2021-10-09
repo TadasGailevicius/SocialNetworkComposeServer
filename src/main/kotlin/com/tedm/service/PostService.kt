@@ -8,11 +8,11 @@ import com.tedm.util.Constants
 class PostService(
     private val repository: PostRepository
 ) {
-    suspend fun createPostIfUserExists(request: CreatePostRequest): Boolean {
+    suspend fun createPostIfUserExists(request: CreatePostRequest, userId: String): Boolean {
         return repository.createPostIfUserExist(
             Post(
                 imageUrl = "",
-                userId = request.userId,
+                userId = userId,
                 timestamp = System.currentTimeMillis(),
                 description = request.description,
             )
