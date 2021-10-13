@@ -19,7 +19,7 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import java.util.*
 
-fun Route.createUserRoute(userService: UserService) {
+fun Route.createUser(userService: UserService) {
     post("/api/user/create") {
         val request = call.receiveOrNull<CreateAccountRequest>() ?: kotlin.run {
             call.respond(HttpStatusCode.BadRequest)
@@ -73,11 +73,25 @@ fun Route.loginUser(
             return@post
         }
 
-        val isCorrectPassword = userService.doesPasswordMatchForUser(request)
+        val user = userService.getUserByEmail(email = request.email) ?: kotlin.run {
+            call.respond(
+                status = HttpStatusCode.OK,
+                message = BasicApiResponse(
+                    successful = false,
+                    message = INVALID_CREDENTIALS
+                )
+            )
+            return@post
+        }
+
+        val isCorrectPassword = userService.isValidPassword(
+            enteredPassword = request.password,
+            actualPassword = user.password,
+        )
         if (isCorrectPassword) {
             val expiresIn = 1000L * 60L * 60L * 24L * 365L
             val token = JWT.create()
-                .withClaim("email", request.email)
+                .withClaim("userId", user.id)
                 .withIssuer(jwtIssuer)
                 .withExpiresAt(Date(System.currentTimeMillis() + expiresIn))
                 .withAudience(jwtAudience)

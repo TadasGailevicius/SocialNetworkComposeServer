@@ -6,16 +6,16 @@ import com.tedm.data.requests.FollowUpdateRequest
 class FollowService (
     private val repository: FollowRepository
 ) {
-    suspend fun followUserIfExists(request: FollowUpdateRequest): Boolean {
+    suspend fun followUserIfExists(request: FollowUpdateRequest, followingUserId: String): Boolean {
         return repository.followUserIfExists(
-            followingUserId = request.followingUserId,
+            followingUserId = followingUserId,
             followedUserId = request.followedUserId
         )
     }
 
-    suspend fun unfollowUserIfExists(request: FollowUpdateRequest): Boolean {
+    suspend fun unfollowUserIfExists(request: FollowUpdateRequest, followingUserId: String): Boolean {
         return repository.unfollowUserIfExists(
-            followingUserId = request.followingUserId,
+            followingUserId = followingUserId,
             followedUserId = request.followedUserId
         )
     }

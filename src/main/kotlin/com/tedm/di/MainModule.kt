@@ -1,14 +1,16 @@
 package com.tedm.di
 
+import com.tedm.data.repository.comment.CommentRepository
+import com.tedm.data.repository.comment.CommentRepositoryImpl
 import com.tedm.data.repository.follow.FollowRepository
 import com.tedm.data.repository.follow.FollowRepositoryImpl
+import com.tedm.data.repository.likes.LikeRepository
+import com.tedm.data.repository.likes.LikeRepositoryImpl
 import com.tedm.data.repository.post.PostRepository
 import com.tedm.data.repository.post.PostRepositoryImpl
 import com.tedm.data.repository.user.UserRepository
 import com.tedm.data.repository.user.UserRepositoryImpl
-import com.tedm.service.FollowService
-import com.tedm.service.PostService
-import com.tedm.service.UserService
+import com.tedm.service.*
 import com.tedm.util.Constants.DATABASE_NAME
 import org.koin.dsl.module
 import org.litote.kmongo.coroutine.coroutine
@@ -30,7 +32,18 @@ val mainModule = module {
     single<PostRepository> {
         PostRepositoryImpl(get())
     }
+
+    single<LikeRepository> {
+        LikeRepositoryImpl(get())
+    }
+
+    single<CommentRepository> {
+        CommentRepositoryImpl(get())
+    }
+
     single { UserService(get()) }
     single { FollowService(get()) }
     single { PostService(get()) }
+    single { LikeService(get()) }
+    single { CommentService(get()) }
 }

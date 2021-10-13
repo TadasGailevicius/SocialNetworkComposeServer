@@ -15,7 +15,7 @@ class PostRepositoryImpl(
     private val posts = db.getCollection<Post>()
     private val users = db.getCollection<User>()
 
-    override suspend fun createPostIfUserExist(post: Post) : Boolean {
+    override suspend fun createPostIfUserExist(post: Post): Boolean {
         val doesUserExist = users.findOneById(post.userId) != null
         if (!doesUserExist) {
             return false
@@ -43,5 +43,9 @@ class PostRepositoryImpl(
             .limit(pageSize)
             .descendingSort(Post::timestamp)
             .toList()
+    }
+
+    override suspend fun getPost(postId: String): Post? {
+        return posts.findOneById(postId)
     }
 }
