@@ -1,5 +1,7 @@
 package com.tedm.di
 
+import com.tedm.data.repository.activity.ActivityRepository
+import com.tedm.data.repository.activity.ActivityRepositoryImpl
 import com.tedm.data.repository.comment.CommentRepository
 import com.tedm.data.repository.comment.CommentRepositoryImpl
 import com.tedm.data.repository.follow.FollowRepository
@@ -41,9 +43,14 @@ val mainModule = module {
         CommentRepositoryImpl(get())
     }
 
-    single { UserService(get()) }
+    single<ActivityRepository> {
+        ActivityRepositoryImpl(get())
+    }
+
+    single { UserService(get(), get()) }
     single { FollowService(get()) }
     single { PostService(get()) }
     single { LikeService(get()) }
     single { CommentService(get()) }
+    single { ActivityService(get(), get(), get()) }
 }

@@ -3,6 +3,7 @@ package com.tedm.routes
 import com.tedm.data.requests.CreateCommentRequest
 import com.tedm.data.requests.DeleteCommentRequest
 import com.tedm.data.responses.BasicApiResponse
+import com.tedm.service.ActivityService
 import com.tedm.service.CommentService
 import com.tedm.service.LikeService
 import com.tedm.service.UserService
@@ -17,7 +18,7 @@ import io.ktor.routing.*
 
 fun Route.createComment(
     commentService: CommentService,
-    //activityService: ActivityService
+    activityService: ActivityService
 ) {
     authenticate {
         post("/api/comment/create") {
@@ -46,12 +47,10 @@ fun Route.createComment(
                     )
                 }
                 is CommentService.ValidationEvent.Success -> {
-                    /*
                     activityService.addCommentActivity(
                         byUserId = userId,
                         postId = request.postId,
                     )
-                     */
                     call.respond(
                         HttpStatusCode.OK,
                         BasicApiResponse(

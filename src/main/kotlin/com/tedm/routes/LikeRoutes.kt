@@ -2,6 +2,8 @@ package com.tedm.routes
 
 import com.tedm.data.requests.LikeUpdateRequest
 import com.tedm.data.responses.BasicApiResponse
+import com.tedm.data.util.ParentType
+import com.tedm.service.ActivityService
 import com.tedm.service.LikeService
 import com.tedm.util.ApiResponseMessages
 import io.ktor.application.*
@@ -12,7 +14,8 @@ import io.ktor.response.*
 import io.ktor.routing.*
 
 fun Route.likeParent(
-    likeService: LikeService
+    likeService: LikeService,
+    activityService: ActivityService
 ) {
     authenticate {
         post("/api/like/") {
@@ -24,13 +27,11 @@ fun Route.likeParent(
             val userId = call.userId
             val likeSuccessful = likeService.likeParent(userId, request.parentId, request.parentType)
             if (likeSuccessful) {
-                /*
                 activityService.addLikeActivity(
                     byUserId = userId,
                     parentType = ParentType.fromType(request.parentType),
                     parentId = request.parentId
                 )
-                */
                 call.respond(
                     HttpStatusCode.OK,
                     BasicApiResponse(

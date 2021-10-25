@@ -12,7 +12,9 @@ import com.tedm.service.UserService
 import com.tedm.util.ApiResponseMessages.FIELDS_BLANK
 import com.tedm.util.ApiResponseMessages.INVALID_CREDENTIALS
 import com.tedm.util.ApiResponseMessages.USER_ALREADY_EXISTS
+import com.tedm.util.QueryParams
 import io.ktor.application.*
+import io.ktor.auth.*
 import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
@@ -112,4 +114,28 @@ fun Route.loginUser(
             )
         }
     }
+}
+
+fun Route.searchUser(
+    userService: UserService
+) {
+    authenticate {
+        get ("/api/user/search") {
+            val query = call.parameters[QueryParams.PARAM_QUERY]
+            if(query == null || query.isBlank()) {
+                call.respond(
+                    HttpStatusCode.OK,
+                    listOf<User>()
+                )
+                return@get
+            }
+            val searchResults = userService.searchForUsers(query, call.userId)
+            call.respond(
+                HttpStatusCode.OK,
+                searchResults
+            )
+
+        }
+    }
+
 }
