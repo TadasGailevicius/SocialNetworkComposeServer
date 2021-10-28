@@ -4,7 +4,10 @@ import com.tedm.data.models.User
 import com.tedm.data.repository.follow.FollowRepository
 import com.tedm.data.repository.user.UserRepository
 import com.tedm.data.requests.CreateAccountRequest
+import com.tedm.data.requests.UpdateProfileRequest
+import com.tedm.data.responses.ProfileResponse
 import com.tedm.data.responses.UserResponseItem
+import io.ktor.client.engine.*
 
 class UserService(
     private val userRepository: UserRepository,
@@ -14,8 +17,26 @@ class UserService(
         return userRepository.getUserByEmail(email) != null
     }
 
-    suspend fun doesEmailBelongToUserId(email: String, userId: String): Boolean {
-        return userRepository.doesEmailBelongToUserId(email, userId)
+    suspend fun getUserProfile(userId: String, callerUserId: String): ProfileResponse? {
+            val user = userRepository.getUserById(userId) ?: return null
+            return  ProfileResponse(
+                username = user.username,
+                bio = user.bio,
+                followerCount = user.followerCount,
+                followingCount = user.followingCount,
+                postCount = user.postCount,
+                profilePictureUrl = user.profileImageUrl,
+                topSkillUrls = user.skills,
+                gitHubUrl = user.gitHubUrl,
+                instagramUrl = user.instagramUrl,
+                linkedInUrl = user.linkedInUrl,
+                isOwnProfile = userId == callerUserId,
+                isFollowing = if (userId != callerUserId) {
+                    followRepository.doesUserFollow(callerUserId,userId)
+                } else {
+                    false
+                }
+            )
     }
 
     suspend fun getUserByEmail(email: String): User? {
@@ -24,6 +45,14 @@ class UserService(
 
     fun isValidPassword(enteredPassword: String, actualPassword: String): Boolean {
         return enteredPassword == actualPassword
+    }
+
+    suspend fun updateUser(
+        userId: String,
+        profileImageUrl: String,
+        updateProfileRequest: UpdateProfileRequest
+    ) : Boolean {
+        return userRepository.updateUser(userId,profileImageUrl,updateProfileRequest)
     }
 
     suspend fun searchForUsers(query: String, userId: String): List<UserResponseItem> {
