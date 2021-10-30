@@ -70,7 +70,9 @@ class UserRepositoryImpl(
                 User::username regex Regex("(?i).*$query.*"),
                 User::email eq query
             ),
-        ).toList()
+        )
+            .descendingSort(User::followerCount)
+            .toList()
     }
 
 }

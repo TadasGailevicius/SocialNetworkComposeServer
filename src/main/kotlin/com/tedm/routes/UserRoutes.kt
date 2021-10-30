@@ -19,6 +19,7 @@ import com.tedm.util.Constants.BASE_URL
 import com.tedm.util.Constants.DEFAULT_POST_PAGE_SIZE
 import com.tedm.util.Constants.PROFILE_PICTURE_PATH
 import com.tedm.util.QueryParams
+import com.tedm.util.save
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.http.*
@@ -222,10 +223,7 @@ fun Route.updateUserProfile(
                         }
                     }
                     is PartData.FileItem -> {
-                        val fileBytes = partData.streamProvider().readBytes()
-                        val fileExtension = partData.originalFileName?.takeLastWhile { it != '.' }
-                        fileName = UUID.randomUUID().toString() + "." + fileExtension
-                        File("build/${PROFILE_PICTURE_PATH}/$fileName").writeBytes(fileBytes)
+                        fileName = partData.save(PROFILE_PICTURE_PATH)
                     }
                     is PartData.BinaryItem -> Unit
                 }

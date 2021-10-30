@@ -7,13 +7,11 @@ import com.tedm.data.responses.BasicApiResponse
 import com.tedm.service.CommentService
 import com.tedm.service.LikeService
 import com.tedm.service.PostService
-import com.tedm.service.UserService
-import com.tedm.util.ApiResponseMessages.USER_NOT_FOUND
 import com.tedm.util.Constants
 import com.tedm.util.QueryParams
+import com.tedm.util.save
 import io.ktor.application.*
 import io.ktor.auth.*
-import io.ktor.auth.jwt.*
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.request.*
@@ -41,11 +39,9 @@ fun Route.createPost(
                             )
                         }
                     }
-                    /*
                     is PartData.FileItem -> {
                         fileName = partData.save(Constants.POST_PICTURE_PATH)
                     }
-                     */
                     is PartData.BinaryItem -> Unit
                 }
             }
@@ -53,7 +49,6 @@ fun Route.createPost(
             val postPictureUrl = "${Constants.BASE_URL}post_pictures/$fileName"
 
             createPostRequest?.let { request ->
-                /*
                 val createPostAcknowledged = postService.createPost(
                     request = request,
                     userId = call.userId,
@@ -70,7 +65,6 @@ fun Route.createPost(
                     File("${Constants.POST_PICTURE_PATH}/$fileName").delete()
                     call.respond(HttpStatusCode.InternalServerError)
                 }
-                */
             } ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
