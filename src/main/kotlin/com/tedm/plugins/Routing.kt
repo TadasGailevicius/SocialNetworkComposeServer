@@ -4,6 +4,7 @@ import com.tedm.routes.*
 import com.tedm.service.*
 import io.ktor.routing.*
 import io.ktor.application.*
+import io.ktor.http.content.*
 import org.koin.ktor.ext.inject
 
 fun Application.configureRouting() {
@@ -25,7 +26,7 @@ fun Application.configureRouting() {
 
     routing {
         // User routes
-        createUser(userService)
+        createUser(userService = userService)
         loginUser(
             userService = userService,
             jwtIssuer = jwtIssuer,
@@ -33,13 +34,16 @@ fun Application.configureRouting() {
             jwtSecret = jwtSecret,
         )
         searchUser(userService = userService)
+        getUserProfile(userService = userService)
+        getPostsForProfile(postService = postService)
+        updateUserProfile(userService = userService)
 
         // Following Routes
         followUser(
             followService = followService,
             activityService = activityService
         )
-        unfollowUser(followService)
+        unfollowUser(followService = followService)
 
         // Post routes
         createPost(
@@ -78,6 +82,12 @@ fun Application.configureRouting() {
             commentService = commentService
         )
         // Activity routes
-        getActivities(activityService)
+        getActivities(activityService = activityService)
+
+        static {
+            resources("static")
+        }
+
+
     }
 }
