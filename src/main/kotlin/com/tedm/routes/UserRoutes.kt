@@ -3,7 +3,6 @@ package com.tedm.routes
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.google.gson.Gson
-import com.tedm.data.repository.user.UserRepository
 import com.tedm.data.models.User
 import com.tedm.data.requests.CreateAccountRequest
 import com.tedm.data.requests.LoginRequest
@@ -16,7 +15,9 @@ import com.tedm.util.ApiResponseMessages
 import com.tedm.util.ApiResponseMessages.FIELDS_BLANK
 import com.tedm.util.ApiResponseMessages.INVALID_CREDENTIALS
 import com.tedm.util.ApiResponseMessages.USER_ALREADY_EXISTS
-import com.tedm.util.Constants
+import com.tedm.util.Constants.BASE_URL
+import com.tedm.util.Constants.DEFAULT_POST_PAGE_SIZE
+import com.tedm.util.Constants.PROFILE_PICTURE_PATH
 import com.tedm.util.QueryParams
 import io.ktor.application.*
 import io.ktor.auth.*
@@ -154,7 +155,7 @@ fun Route.getPostsForProfile(
         get("/api/user/posts") {
             val page = call.parameters[QueryParams.PARAM_PAGE]?.toIntOrNull() ?: 0
             val pageSize =
-                call.parameters[QueryParams.PARAM_PAGE_SIZE]?.toIntOrNull() ?: Constants.DEFAULT_POST_PAGE_SIZE
+                call.parameters[QueryParams.PARAM_PAGE_SIZE]?.toIntOrNull() ?: DEFAULT_POST_PAGE_SIZE
 
             val posts = postService.getPostsForProfile(
                 userId = call.userId,
@@ -222,22 +223,23 @@ fun Route.updateUserProfile(
                     }
                     is PartData.FileItem -> {
                         val fileBytes = partData.streamProvider().readBytes()
-                        fileName = UUID.randomUUID().toString()
-                        File("${Constants.PROFILE_PICTURE_PATH}/$fileName").writeBytes(fileBytes)
+                        val fileExtension = partData.originalFileName?.takeLastWhile { it != '.' }
+                        fileName = UUID.randomUUID().toString() + "." + fileExtension
+                        File("build/${PROFILE_PICTURE_PATH}/$fileName").writeBytes(fileBytes)
                     }
                     is PartData.BinaryItem -> Unit
                 }
             }
 
-            val profilePictureUrl = "${Constants.BASE_URL}${Constants.PROFILE_PICTURE_PATH}${fileName}"
+            val profilePictureUrl = "${BASE_URL}profile_pictures/${fileName}"
 
             updateProfileRequest?.let { request ->
-                val updateAknowledged = userService.updateUser(
+                val updateAcknowledged = userService.updateUser(
                     userId = call.userId,
                     profileImageUrl = profilePictureUrl,
                     updateProfileRequest = request
                 )
-                if (updateAknowledged) {
+                if (updateAcknowledged) {
                     call.respond(
                         HttpStatusCode.OK,
                         BasicApiResponse(
@@ -245,8 +247,8 @@ fun Route.updateUserProfile(
                         )
                     )
                 } else {
-                    File("${Constants.PROFILE_PICTURE_PATH}/$fileName").delete()
-                    call.respond(HttpStatusCode.InternalServerError,)
+                    File("${PROFILE_PICTURE_PATH}/$fileName").delete()
+                    call.respond(HttpStatusCode.InternalServerError)
                 }
             } ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
