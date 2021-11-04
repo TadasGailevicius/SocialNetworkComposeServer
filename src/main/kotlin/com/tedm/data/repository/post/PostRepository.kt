@@ -5,7 +5,7 @@ import com.tedm.util.Constants
 
 interface PostRepository {
 
-    suspend fun createPostIfUserExist(post: Post) : Boolean
+    suspend fun createPost(post: Post) : Boolean
 
     suspend fun deletePost(postId: String)
 

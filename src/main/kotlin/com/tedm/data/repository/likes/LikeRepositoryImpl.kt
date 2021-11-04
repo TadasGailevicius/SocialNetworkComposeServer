@@ -1,7 +1,7 @@
 package com.tedm.data.repository.likes
 
-import com.tedm.data.models.Following
 import com.tedm.data.models.Like
+import com.tedm.data.models.Post
 import com.tedm.data.models.User
 import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.and
@@ -41,5 +41,13 @@ class LikeRepositoryImpl(
 
     override suspend fun deleteLikesForParent(parentId: String){
         likes.deleteMany(Like::parentId eq parentId)
+    }
+
+    override suspend fun getLikesForParent(parentId: String, page: Int, pageSize: Int): List<Like> {
+        return likes.find(Like::parentId eq parentId)
+            .skip(page * pageSize)
+            .limit(pageSize)
+            .descendingSort(Like::timestamp)
+            .toList()
     }
 }

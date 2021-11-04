@@ -59,16 +59,15 @@ class UserService(
         val users = userRepository.searchForUsers(query)
         val followsByUser = followRepository.getFollowsByUser(userId)
         return users.map { user ->
-            val isFollowing = followsByUser.find {
-                it.followedUserId == user.id
-            } != null
+            val isFollowing = followsByUser.find { it.followedUserId == user.id } != null
             UserResponseItem(
+                userId = user.id,
                 username = user.username,
                 profilePictureUrl = user.profileImageUrl,
                 bio = user.bio,
                 isFollowing = isFollowing
             )
-        }
+        }.filter { it.userId != userId }
     }
 
     suspend fun createUser(request: CreateAccountRequest) {
